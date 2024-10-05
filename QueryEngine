@@ -4,12 +4,14 @@ import re
 # Mocking up a sample dataframe to simulate the natural language corpus
 data = {
     'text': [
-        "aa bb cc dd",
-        "aa ee",
+        "a a bb cc dd",
+        "a a ee",
         "cc ee",
-        "dd aa bb",
+        "dd a a bb",
         "ff gg",
-        "aa bb cc ee"
+        "a a bb cc ee aa",
+        "cc+ee+cc*",
+        "'aa.b|bcc*ee+"
     ]
 }
 
@@ -17,7 +19,7 @@ data = {
 df = pd.DataFrame(data)
 
 # Escape special regex characters and handle multi-word phrases
-def evaluate_complex_expression_v12(text_series, expression):
+def evaluate_complex_expression(text_series, expression):
     def escape_special_chars(token):
         if token.startswith("'") or token.startswith('"'):
             stripped_token = token[1:-1]
@@ -45,7 +47,7 @@ def evaluate_complex_expression_v12(text_series, expression):
 
 # Test expression with special characters
 expression_with_special_chars = "('cc*' or ('aa.' and 'bb')) and ('work well*' or 'ee+')"
-matches_with_special_chars = evaluate_complex_expression_v12(df['text'], expression_with_special_chars)
+matches_with_special_chars = evaluate_complex_expression(df['text'], expression_with_special_chars)
 matching_indices_with_special_chars = df.index[matches_with_special_chars].tolist()
 
 # Show matching indices and texts
