@@ -1,0 +1,52 @@
+import pandas as pd
+import re
+
+# Mocking up a sample dataframe to simulate the natural language corpus
+data = {
+    'text': [
+        "aa bb cc dd",
+        "aa ee",
+        "cc ee",
+        "dd aa bb",
+        "ff gg",
+        "aa bb cc ee"
+    ]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Escape special regex characters and handle multi-word phrases
+def evaluate_complex_expression_v12(text_series, expression):
+    def escape_special_chars(token):
+        if token.startswith("'") or token.startswith('"'):
+            stripped_token = token[1:-1]
+            return f'text_series.str.contains("{re.escape(stripped_token)}")'
+        return f'text_series.str.contains("{re.escape(token)}")'
+    
+    tokens = re.split(r"(\s+|\(|\)|and|or|'[^']*'|\"[^\"]*\")", expression)
+    transformed_expr = []
+    
+    for token in tokens:
+        token = token.strip()
+        if token == "and":
+            transformed_expr.append("&")
+        elif token == "or":
+            transformed_expr.append("|")
+        elif token in ["(", ")"]:
+            transformed_expr.append(token)
+        elif token:
+            transformed_expr.append(escape_special_chars(token))
+    
+    final_expr = ' '.join(transformed_expr)
+    print("Transformed Expression:", final_expr)
+    
+    return eval(final_expr)
+
+# Test expression with special characters
+expression_with_special_chars = "('cc*' or ('aa.' and 'bb')) and ('work well*' or 'ee+')"
+matches_with_special_chars = evaluate_complex_expression_v12(df['text'], expression_with_special_chars)
+matching_indices_with_special_chars = df.index[matches_with_special_chars].tolist()
+
+# Show matching indices and texts
+matching_indices_with_special_chars, df['text'][matching_indices_with_special_chars]
